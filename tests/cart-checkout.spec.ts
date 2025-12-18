@@ -4,7 +4,7 @@ import { ProductsPage } from '../pages/ProductPage';
 import { CartPage } from '../pages/CartPage';
 import { CheckoutPage } from '../pages/CheckoutPage';
 
-test.describe('Add / Checkout Flow', () => {
+test.describe('Add / Remove / Checkout Flow', () => {
   test.beforeEach(async ({ page }) => {
     const loginPage = new LoginPage(page);
 
@@ -31,7 +31,22 @@ test.describe('Add / Checkout Flow', () => {
     await cartPage.assertProductExistsInCart(firstProduct.name);
   });
 
+  test('Verify customer can remove a product from the cart', async ({ page }) => {
+    const productsPage = new ProductsPage(page);
+    const cartPage = new CartPage(page);
 
+    const firstProduct = await productsPage.getFirstProductDetails();
+
+    await productsPage.addFirstProductToCart();
+    await productsPage.openCart();
+
+    await cartPage.assertCartPageDisplayed();
+    await cartPage.assertProductExistsInCart(firstProduct.name);
+
+    await cartPage.removeProductFromCart(firstProduct.name);
+
+    await cartPage.assertProductRemovedFromCart(firstProduct.name);
+  });
 
   test('Verify Product details is consistent across the pages', async ({ page }) => {
     const productsPage = new ProductsPage(page);
@@ -46,7 +61,6 @@ test.describe('Add / Checkout Flow', () => {
     await cartPage.assertProductExistsInCart(productDetailsOnProducts.name);
 
     const productDetailsOnCart = await cartPage.getCartProductDetails(productDetailsOnProducts.name);
-
 
     test.expect(productDetailsOnCart.name).toBe(productDetailsOnProducts.name);
     test.expect(productDetailsOnCart.price).toBe(productDetailsOnProducts.price);
